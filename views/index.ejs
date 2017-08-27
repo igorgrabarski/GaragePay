@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>GaragePay</title>
+        <link rel="stylesheet" href="../css/styles.css" type="text/css">
+    </head>
+
+    <body>
+        <ul class="ul-main">
+            <li>
+                <h3>Entrance</h3>
+                <input id="print_ticket_button" type="button" value="Print a Ticket"/>
+            </li>
+            <li>
+                <h3>Pay for parking</h3>
+                <label>Ticket ID:</label>
+                <input type="text" id="ticket_id_pay" />
+                <select id="rate">
+                  <option value="1">1 Hour</option>
+                  <option value="3">3 Hours</option>
+                  <option value="6">6 Hours</option>
+                  <option value="24">ALL DAY</option>
+                </select>
+                <input id="pay_button" type="button" value="Pay"/>
+            </li>
+            <li>
+                <h3>Exit the garage</h3>
+                <label>Ticket ID:</label>
+                <input type="text" id="ticket_id_exit" />
+                <input id="exit_button" type="button" value="Check before exit"/>
+            </li>
+        </ul>
+        <h4 id="message"></h4>
+
+
+        <!-- ***************** JS scripts to perform requests and to update messages asynchronously -->
+        <script>
+            window.onload = function(){
+
+                var message = document.getElementById("message");
+
+                <!-- ******* Function to perform Async Requests to the server ********************* -->
+                function makeRequest(url){
+                     var xhr = new XMLHttpRequest();
+                     xhr.open("GET", url);
+
+                     xhr.onload = function(){
+                        if(xhr.readyState === xhr.DONE && xhr.status === 200){
+                            if(xhr.responseText === 'client_phone'){
+                                var phone_number = prompt('Sorry! No free lots left.Please enter your phone number and we will update you when it changes','');
+
+                                if(phone_number != null && phone_number != ''){
+                                    makeRequest('/put_on_waiting_list/' + phone_number);
+                                }
+                            }
+                            else{
+                                message.innerText = xhr.responseText;
+                            }
+
+                        }
+                     };
+
+                     xhr.onerror = function(error){
+                        message.innerText = error;
+                     }
+
+                     xhr.send(null);
+                }
+
+                <!-- ***************** Print ticket on entering ********************** -->
+                document.getElementById("print_ticket_button").onclick = function(){
+                    makeRequest('/enter');
+                };
+
+
+                <!-- ********************* Pay for parking *************************** -->
+                document.getElementById("pay_button").onclick = function(){
+
+                     var ticket_id_pay =  document.getElementById("ticket_id_pay").value;
+
+                     if(checkTicketId(ticket_id_pay)){
+                          var rate =  document.getElementById("rate").value;
+
+                          makeRequest("/pay_ticket/" + ticket_id_pay + "/" + rate);
+                     }
+                     else{
+                          message.innerText = 'Ticket ID may only contain digits';
+                     }
+                };
+
+
+                <!-- ********************** Check your ticket before exit ************ -->
+                document.getElementById("exit_button").onclick = function(){
+                     var ticket_id_exit =  document.getElementById("ticket_id_exit").value;
+
+                     if(checkTicketId(ticket_id_exit)){
+                        makeRequest("/exit/" + ticket_id_exit);
+                     }
+                     else{
+                        message.innerText = 'Ticket ID may only contain digits';
+                     }
+
+                };
+
+
+
+                <!-- ******************** Check for Ticket ID validity *************** -->
+                function checkTicketId(ticket_id){
+                     const pattern = new RegExp('^[0-9]{1,}$');
+
+                     return !!pattern.exec(ticket_id);
+                }
+
+            };
+        </script>
+    </body>
+</html>
