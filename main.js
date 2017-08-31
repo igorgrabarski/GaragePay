@@ -24,9 +24,9 @@ app.get('/', function (req, resp) {
 
 // ************************************* Enter Page *********************************************
 /* 1. Check for free lots
-*  2. Increase number of vehicles in garage by 1
-*  3. Create new ticket for vehicle
-*/
+ *  2. Increase number of vehicles in garage by 1
+ *  3. Create new ticket for vehicle
+ */
 app.get('/enter', function (req, resp) {
     connection.beginTransaction(function (err) {
         if (err) {
@@ -41,21 +41,21 @@ app.get('/enter', function (req, resp) {
             if ((result[0].total_lots - result[0].total_vehicles) === 0) {
 
                 /* There are no free parking lots
-                *  Send request for client's phone number to add to the Waiting list
-                */
+                 *  Send request for client's phone number to add to the Waiting list
+                 */
                 resp.send('client_phone');
             }
             else{
                 // Increase the number of vehicles by 1 and update DB accordingly
                 connection.query('UPDATE garage SET total_vehicles=? WHERE id=1;', [result[0].total_vehicles+1],
                     function (error) {
-                    if (error) {
-                        return connection.rollback(function () {
-                            console.log('Could not update the number of vehicles');
-                            throw error;
-                        });
-                    }
-                });
+                        if (error) {
+                            return connection.rollback(function () {
+                                console.log('Could not update the number of vehicles');
+                                throw error;
+                            });
+                        }
+                    });
 
 
                 // Create new ticket and let vehicle in
@@ -84,17 +84,17 @@ app.get('/enter', function (req, resp) {
                 });
             }
         });
-        });
+    });
 });
 
 
 
 // ********************************** Pay for parking *******************************************
 /* 1. Check if not paid yet
-*  2. Update exit time by user choice(1,3, 6 or 24 hours)
-*  3. Calculate the fee (In production - perform actual payment transaction)
-*  4. Update paid_total in DB
-*/
+ *  2. Update exit time by user choice(1,3, 6 or 24 hours)
+ *  3. Calculate the fee (In production - perform actual payment transaction)
+ *  4. Update paid_total in DB
+ */
 app.get('/pay_ticket/:id/:rate', function (req, resp) {
 
     // Check for Ticket ID validity
@@ -128,25 +128,25 @@ app.get('/pay_ticket/:id/:rate', function (req, resp) {
                 var exitTime = enterTime.addHours(req.params.rate);
                 connection.query('UPDATE tickets SET exit_time=? WHERE id=?',[exitTime, req.params.id],
                     function (error2) {
-                   if(error2){
-                       console.log(error2);
-                   }
+                        if(error2){
+                            console.log(error2);
+                        }
 
-                });
+                    });
 
                 // Update the payment in DB
                 connection.query('SELECT * FROM pay_rates WHERE num_of_hours=?', [req.params.rate],
                     function (error3, result) {
-                    if(error3){
-                        console.log(error3);
-                    }
+                        if(error3){
+                            console.log(error3);
+                        }
 
-                    connection.query('UPDATE tickets SET paid_total=? WHERE id=?', [result[0].rate,req.params.id],
-                        function () {
+                        connection.query('UPDATE tickets SET paid_total=? WHERE id=?', [result[0].rate,req.params.id],
+                            function () {
+
+                            });
 
                     });
-
-                });
 
                 connection.query('UPDATE tickets SET paid=1 WHERE id=?',[req.params.id], function (error4) {
                     if(error4){
@@ -185,10 +185,10 @@ app.get('/pay_ticket/:id/:rate', function (req, resp) {
 
 // ************************************* Exit Page *********************************************
 /* 1. Check if the ticket is paid/valid
-*  2. Decrease number of vehicles in garage by 1
-*  3. Transfer vehicle's row from tickets table to archive table
-*  4. Send SMS to first vehicle in waitingList and shift it out
-*/
+ *  2. Decrease number of vehicles in garage by 1
+ *  3. Transfer vehicle's row from tickets table to archive table
+ *  4. Send SMS to first vehicle in waitingList and shift it out
+ */
 app.get('/exit/:id', function (req, resp) {
 
     if(!checkTicketId(req.params.id)){
@@ -211,13 +211,13 @@ app.get('/exit/:id', function (req, resp) {
                     // Decrease the number of vehicles in garage by 1 and update DB accordingly
                     connection.query('UPDATE garage SET total_vehicles=? WHERE id=1;', [result[0].total_vehicles-1],
                         function (error) {
-                        if (error) {
-                            return connection.rollback(function () {
+                            if (error) {
+                                return connection.rollback(function () {
 
-                            });
+                                });
 
-                        }
-                    });
+                            }
+                        });
 
                 });
 
