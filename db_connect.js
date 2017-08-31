@@ -1,4 +1,4 @@
-// ********** Connection to database ************
+// *********** Connection to database ************
 var mysql = require('mysql');
 var connection = mysql.createConnection({
     host: 'YOUR_HOST',
