@@ -16,7 +16,7 @@ var waitingList = [];
 // ************************************** Main Page ********************************************
 app.get('/', function (req, resp) {
 
-    resp.render('index');
+    return resp.render('index');
 
 });
 
@@ -31,7 +31,7 @@ app.get('/enter', function (req, resp) {
     connection.beginTransaction(function (err) {
         if (err) {
             console.log(err);
-            resp.send('Something went wrong on our side. Please try again.');
+            return resp.send('Something went wrong on our side. Please try again.');
         }
         // Check for free lots
         connection.query('SELECT * FROM garage;', function (error, result) {
@@ -43,7 +43,7 @@ app.get('/enter', function (req, resp) {
                 /* There are no free parking lots
                  *  Send request for client's phone number to add to the Waiting list
                  */
-                resp.send('client_phone');
+                return resp.send('client_phone');
             }
             else{
                 // Increase the number of vehicles by 1 and update DB accordingly
